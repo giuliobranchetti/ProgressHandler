@@ -5,7 +5,8 @@ Public Class ProgressHandler
     Inherits BackgroundWorker
 
     Protected _pb As ProgressBar
-    Protected _label As ToolStripLabel
+    Protected _label As Label
+    Protected _tsLabel As ToolStripLabel
 
     Protected _max As Integer
     Protected _progress As Integer
@@ -17,6 +18,7 @@ Public Class ProgressHandler
 
         _pb = Nothing
         _label = Nothing
+        _tsLabel = Nothing
 
         _max = 0
         _progress = 0
@@ -30,6 +32,18 @@ Public Class ProgressHandler
         AddHandler RunWorkerCompleted, AddressOf HandleRunWorkerCompleted
     End Sub
 
+    Public ReadOnly Property Progress
+        Get
+            Return _progress
+        End Get
+    End Property
+
+    Public ReadOnly Property Max
+        Get
+            Return _max
+        End Get
+    End Property
+
     Public Function WithProgressBar(ByRef pb As ProgressBar) As ProgressHandler
         _pb = pb
         Return Me
@@ -39,8 +53,13 @@ Public Class ProgressHandler
         Return WithProgressBar(tspb.ProgressBar)
     End Function
 
-    Public Function WithLabel(ByRef label As ToolStripLabel) As ProgressHandler
+    Public Function WithLabel(ByRef label As Label) As ProgressHandler
         _label = label
+        Return Me
+    End Function
+
+    Public Function WithLabel(ByRef label As ToolStripLabel) As ProgressHandler
+        _tsLabel = label
         Return Me
     End Function
 
@@ -92,6 +111,15 @@ Public Class ProgressHandler
                 _label.Text = e.UserState.ToString
             End If
         End If
+
+        If Not IsNothing(_tsLabel) Then
+            ' mentre la label mostra il valore effettivo
+            If e.UserState Is Nothing Then
+                _tsLabel.Text = $"{_progress}/{_max}"
+            Else
+                _tsLabel.Text = e.UserState.ToString
+            End If
+        End If
     End Sub
 
     Private Sub HandleProgressChanged(sender As Object, e As ProgressChangedEventArgs)
@@ -107,6 +135,14 @@ Public Class ProgressHandler
                 _label.Text = e.UserState.ToString
             End If
         End If
+
+        If Not IsNothing(_tsLabel) Then
+            If e.UserState Is Nothing Then
+                _tsLabel.Text = $"{_progress}/{_max}"
+            Else
+                _tsLabel.Text = e.UserState.ToString
+            End If
+        End If
     End Sub
 
     Private Sub HandleRunWorkerCompleted(sender As Object, e As RunWorkerCompletedEventArgs)
@@ -119,6 +155,14 @@ Public Class ProgressHandler
                 _label.Text = $"{_max} record trovati"
             Else
                 _label.Text = e.Result.ToString
+            End If
+        End If
+
+        If Not IsNothing(_tsLabel) Then
+            If e.Result Is Nothing Then
+                _tsLabel.Text = $"{_max} record trovati"
+            Else
+                _tsLabel.Text = e.Result.ToString
             End If
         End If
     End Sub
